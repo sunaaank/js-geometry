@@ -52,6 +52,13 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 // 전체 브라우저창: 창 크기
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.render(scene, camera);
+
+// 회전시키는 코드
+renderer.setAnimationLoop(() => {
+  car.rotation.y -= 0.007;
+  renderer.render(scene, camera);
+});
+
 // 렌더링된 이미지를 HTML 문서에 추가함. HTML Canvas 요소를 만들고, DOM에 추가함
 document.body.appendChild(renderer.domElement);
 
@@ -63,4 +70,84 @@ function createWheels() {
   const material = new THREE.MeshLambertMaterial({ color: 0x333333 });
   const wheel = new THREE.Mesh(geometry, material);
   return wheel;
+}
+
+function createCar() {
+  const car = new THREE.Group();
+
+  const backWheel = createWheels();
+  backWheel.position.y = 6;
+  backWheel.position.x = -18;
+  car.add(backWheel);
+
+  const frontWheel = createWheels();
+  backWheel.position.y = 6;
+  backWheel.position.x = -18;
+  car.add(frontWheel);
+
+  const main = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(60, 15, 30),
+    new THREE.MeshLambertMaterial({ color: 0x78b14b })
+  );
+  main.position.y = 12;
+  car.add(main);
+
+  const carFrontTexture = getCarFrontTexture();
+  const carBackTexture = getCarFrontTexture();
+  const carRightSideTexture = getCarSideTexture();
+  const carLeftSideTexture = getCarSideTexture();
+  // 양쪽 맵핑 대칭으로 뒤집기(회전 중심이 중간이 되도록 설정, 텍스터 180도 회전, , 텍스처를 거꾸로 뒤집어 올바른 위치에 둠)
+  carLeftSideTexture.center = new THREE.Vector2(0.5, 0.5);
+  carLeftSideTexture.rotation = Math.PI;
+  carLeftSideTexture.flipY = false;
+
+  const cabin = new THREE.Mesh(new THREE.BoxBufferGeometry(33, 12, 24), [
+    new THREE.MeshLambertMaterial({ map: carFrontTexture }),
+    new THREE.MeshLambertMaterial({ map: carBackTexture }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+    new THREE.MeshLambertMaterial({ map: carRightSideTexture }),
+    new THREE.MeshLambertMaterial({ map: carLeftSideTexture }),
+  ]);
+
+  cabin.position.x = -6;
+  cabin.position.y = 25.5;
+  car.add(cabin);
+
+  return car;
+}
+
+const car = createCar();
+scene.add(car);
+renderer.render(scene, camera);
+
+function getCarFrontTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 64, 32);
+
+  ctx.fillStyle = '#666666';
+  ctx.fillRect(8, 8, 48, 24);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+function getCarSideTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 128, 32);
+
+  ctx.fillStyle = '#666666';
+  ctx.fillRect(19, 8, 38, 24);
+  ctx.fillRect(58, 8, 60, 24);
+
+  return new THREE.CanvasTexture(canvas);
 }
