@@ -9,6 +9,16 @@ let flat = nestedMax.reduce((acc, it) => [...acc, ...it], []);
 // 위와 동일한 기능인데 성능 더 나음
 let flat2 = [].concat.apply([], nested);
 
+// 특정 조건 순서에 따라 정렬
+function sortByBufferView(a, b) {
+  if (a.bufferView < b.bufferView) return 1;
+  if (a.bufferView > b.bufferView) return -1;
+  return 0;
+}
+
+const result = data.accessors.sort(sortByBufferView);
+console.log(result);
+
 // 객체 key-value map 역전
 let cities = {
   Lyon: 'France',
